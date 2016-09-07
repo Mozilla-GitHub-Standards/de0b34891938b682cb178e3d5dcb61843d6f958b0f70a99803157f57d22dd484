@@ -1,0 +1,157 @@
+---
+title: Effect of add-ons on engagement of Firefox users
+date: Updated `r format(Sys.Date(), "%B %d, %Y")`
+output:
+    html_document:
+        theme: flatly
+        toc: true
+        toc_float: true
+---
+
+<style type="text/css">
+/* Some styling to make TODO sections stand out. */
+div[id^="todo"] {
+  color: darkslategrey;
+  background-color: bisque;
+  border-radius: 5px;
+  border: 1px solid burlywood;
+  padding: 0 5px;
+}
+</style>
+
+One of the most popular features of Firefox is the ability to customize its behaviour through the use of add-ons. It is known that our user population is very heterogeneous in the way it interacts with Firefox, with some users active in the browser for hours a day and taking advantage of advanced features, and others opening it up for only a few minutes from time to time. Users also vary in the ways in which they engage with add-ons, with a few users running multiple add-ons, many not using add-ons at all, and the rest having only 1 or 2 add-ons.
+
+However, not much is known about the relationship between add-on usage and user activity and engagement. It is generally the more advanced and engaged users who are most comfortable with add-ons, but it would be desirable to elicit a more direct causal relationship: _do users become more engaged as a result of using add-ons?_
+We attempt to answer this question, to the extent possible, via an observational study run on profile data collected by Unified Telemetry.
+
+# Study design
+
+We take the approach of a __retrospective non-equivalent groups__ study, comparing a group of users who install an add-on to a group that don't in terms of measures of engagement. This study is not feasible to run as a randomized experiment, since we can't require users to install add-ons (at least not without biasing the outcomes). However, we can take measures to ensure that the groups we are comparing are as similar as possible.
+
+## Population {#population}
+
+The study is restricted (for now) to the population of recently created (__new__) profiles, for which we have UT data ranging all the way back to profile creation. In this way, for each profile in the study, we have a complete view of their interaction with the browser (as far as it is measured in UT).
+
+Time of events (eg. time until an add-on is installed) will be considered in terms of __profile age__ (number of days since profile creation).
+
+We further restrict consideration to profiles belonging to a segment of interest, in the hopes of controlling additional sources of bias:
+
+- release channel
+- Mozilla stock distribution (partner distributions target specific groups of users and often have pre-installed add-ons)
+- specific locales (add-on preferences and browser engagement are known to vary significantly between regions, as identified by locale and geo)
+- specific geos
+- profile was on newest available version at creation time (almost every profile should meet this requirement, but just in case)
+
+#### TODO
+
+- which locales and geos?
+
+## Groups
+
+The study compares two subgroups of these profiles:
+
+- __test__: new profiles that install a first add-on within 3 months of profile creation
+- __control__: new profiles that do not install an add-on for at least 6 months since profile creation
+
+The test group is selected from profiles that:
+
+- were created between 2016-01-01 and 2016-03-01 (so that their entire history is available in the UT dataset, and they are least 6 months old)
+- belong to the [population of interest](#population)
+- installed an [acceptable add-on](#addon-requirements) no earlier than 2 weeks(?) and no later than 3 months since profile creation
+- did not install a second add-on within the first 6 months
+
+The control group is selected from profiles that:
+
+- were created on or after 2016-01-01
+- belong to the population of interest
+- did not install any add-on for at least 6 months since profile creation
+- [match](#matching) a profile in the test group along a set of profile characteristics
+
+
+#### TODO
+
+- fix time periods:
+    + initial period (before first add-on installation)
+    + treatment period (during which the first add-on can be installed)
+    + follow-up period (during which no further add-ons can be installed)
+- should we allow profiles with system add-ons? are we biasing if we don't? Otherwise, include presence of system add-ons in the model as a covariate.
+
+
+### The first add-on {#addon-requirements}
+
+There are certain restrictions on the first add-on that a test group member installs in order to be included in the study:
+
+- The add-on must be one that the user installed explicitly, ie. not a system add-on, not bundled with some other other software (eg. virus scanners), etc.
+- The add-on must relatively common (to ensure decent group sizes)
+- The add-on must be one that affects the user's browsing experience in a noticeable way, eg. visibly modifying web content (ad blocker), adding functionality (video downloader)
+    + We could potentially include add-ons that don't have a noticeable effect for comparison
+
+#### TODO
+
+- Determine the set of add-ons to consider. What about themes?
+
+### Profile matching {#matching}
+
+Profiles are matched on a set of covariates measured during the initial 2-week period starting from profile creation:
+
+#### TODO
+
+- what are the matching covariates
+- how many control profiles get matched to each test profile (and should that number vary randomly?)
+
+## Response measurement
+
+The response measure is chosen so as to give a decent indication of "engagement" with the browser. It should be something that can be measured and compared on a time scale of weeks.
+
+For now, a single activity metric is used as the response measurement. In future work, we will consider multivariate approaches.
+
+#### TODO
+
+- Candidate response measures
+
+## Pre/post design
+
+The study uses a pre/post design, in which the response metric measured after the add-on installation is viewed in relation to a baseline measurement taken around the time of profile creation. In the model, the baseline measurement is "controlled for" by including it as a covariate.
+
+For each profile, we record the response metric
+
+- over the first 2(?) weeks starting from profile creation (__pre__)
+- over a 2(?)-week period starting 5(?) months since profile creation (__post__)
+
+#### TODO
+
+- What should the time cutoffs be for pre and post?
+- Should be allow variable time periods for profiles with more data?
+
+## Covariates
+
+The following measures will be included as covariates in the model, in order to control for their effect when analyzing the effect on the response of installing the add-on:
+
+#### TODO
+
+- covariate measures
+
+# Limitations and bias
+
+At this point, it is helpful to discuss the limitations and biases inherent in this approach.
+
+It is possible to obtain a false result due to __biases in the non-random assignment__ of profiles to groups. If the study indicates a significant difference in the engagement measure between the groups, and in fact the installation of an add-on has no effect on that measure, then we have observed a false positive.
+This would be due to biases caused by the non-random assignment of profiles to groups. For example, if the profiles included in the test group tend to share some other characteristic that is associated with higher engagement, while those in the control group lack that characteristic, the study would reveal a false positive effect. This characteristic may be something that is not or cannot be measured in UT, such as a user's sense of satisfaction.
+
+This can be mitigated somewhat by matching profiles between test and control on as many dimensions as possible, and by developing "elaborate theories" (multiple subhypotheses that explain minor relationships observed in the data) that would also need to find alternative explanations if add-ons had no effect.
+Beyond that, a sensitivity analysis will quantify how reasonable it would be to obtain the observed results if they were in fact wrong.
+
+If the study finds no difference in the engagement measure between the groups, it may be because there is a real effect that was not detected due to biases discussed above.
+However, another possibility is that there is truly no effect on the studied engagement measure, but there is a true difference between the groups in some other response measure, which may or may not be measurable. In this case, we would expect the new measure to not be (strongly) correlated with the original one used in the study.
+
+One approach to handle this would be to try fitting the model against multiple uncorrelated response measures related to "engagement". If none of these show an effect, this would suggest that either there truly is no effect, or there is an effect along an unmeasurable dimension. The elaborate theory technique may help reduce the potential for such unmeasurable effects.
+
+
+# Matching
+
+#### TODO
+
+- Describe the algorithm for matching profiles on the variables listed [above](#matching)
+
+# Model
+
