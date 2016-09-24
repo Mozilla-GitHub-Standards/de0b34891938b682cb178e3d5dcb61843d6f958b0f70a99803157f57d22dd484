@@ -42,6 +42,10 @@ We further restrict consideration to profiles belonging to a segment of interest
 - specific geos
 - profile was on newest available version at creation time (almost every profile should meet this requirement, but just in case)
 
+#### For v1 of the model:
+
+- Use locale `en-US` and geo `US`
+
 #### TODO
 
 - which locales and geos?
@@ -57,27 +61,29 @@ The test group is selected from profiles that:
 
 - were created between 2016-01-01 and 2016-03-01 (so that their entire history is available in the UT dataset, and they are least 6 months old)
 - belong to the [population of interest](#population)
-- installed an [acceptable add-on](#addon-requirements) no earlier than 2 weeks(?) and no later than 3 months since profile creation
-- did not install a second add-on within the first 6 months
+- installed an [acceptable add-ons](#addon-requirements) (the _first add-on_) no earlier than 2 weeks(?) and no later than 3 months since profile creation
+- may have installed other acceptable add-ons at a later stage, and may have
+had non-acceptable add-ons installed at any stage (eg. system add-ons)
 
 The control group is selected from profiles that:
 
-- were created on or after 2016-01-01
+- were created between 2016-01-01 and 2016-03-01
 - belong to the population of interest
-- did not install any add-on for at least 6 months since profile creation
+- did not install any acceptable add-on for at least 6 months since profile creation (although they may have had non-acceptable add-ons installed)
 - [match](#matching) a profile in the test group along a set of profile characteristics
 
+The goal is to test the effect of (actively) using add-ons in general. Thus, our test group "uses add-ons" in the sense that each user actively installed at least one add-on during the study period, whereas the control group didn't. We allow the presence of unacceptable add-ons (such as system add-ons) in either group, since excluding them completely would introduce bias. (Of course it's possible that the presence of badly-behaving unacceptable add-ons would cause confounding, but let's handle that at a later stage).
 
 #### TODO
 
 - fix time periods:
     + initial period (before first add-on installation)
+However, we want to exclude add-ons which are known to cause problems, so as not to have their presence confounding the results.
     + treatment period (during which the first add-on can be installed)
     + follow-up period (during which no further add-ons can be installed)
-- should we allow profiles with system add-ons? are we biasing if we don't? Otherwise, include presence of system add-ons in the model as a covariate.
+- include presence of non-acceptable, non-system add-ons as a covariate
 
-
-### The first add-on {#addon-requirements}
+### Acceptable first add-ons {#addon-requirements}
 
 There are certain restrictions on the first add-on that a test group member installs in order to be included in the study:
 
@@ -85,6 +91,13 @@ There are certain restrictions on the first add-on that a test group member inst
 - The add-on must relatively common (to ensure decent group sizes)
 - The add-on must be one that affects the user's browsing experience in a noticeable way, eg. visibly modifying web content (ad blocker), adding functionality (video downloader)
     + We could potentially include add-ons that don't have a noticeable effect for comparison
+
+A good example of an acceptable add-on is AdBlock Plus.
+
+#### For v1 of the model:
+
+- AdBlock Plus
+- ...
 
 #### TODO
 
@@ -125,11 +138,44 @@ For each profile, we record the response metric
 
 ## Covariates
 
-The following measures will be included as covariates in the model, in order to control for their effect when analyzing the effect on the response of installing the add-on:
+The following measures will be included as covariates in the model, in order to control for their effect when analyzing the effect on the response of installing the add-on.
 
-#### TODO
+The following system characteristics are intended to describe a user's computing environment/resources, as well as give an indication of their technical knowledge.
 
-- covariate measures
+- OS
+- OS version (Windows only)
+- System architecture
+- System memory (grouped by 2^n GB)
+- Number of physical CPU cores
+- (First) graphics adapter vendorID?
+
+There are some other features we want to control for but aren't explicitly interested in.
+
+- Average number of main crashes per session hour
+- Initial Firefox version
+- Profile creation date (grouped by month)
+- Did they have non-system, non-acceptable add-ons?
+    + eg. did they have foreign-installed, enabled add-ons?
+- Did they enable telemetry by the end of the period?
+
+The following statistics are aggregated over a period. Together, they characterize a user's pattern of activity and engagement.
+
+- Total number of active days in the period
+- Longest run of consecutive active days in the period
+- Was the profile active on weekends?
+- Average number of sessions per active day
+- Average uptime per active day (in minutes)
+- Average usage intensity (percentage of uptime that was "active")
+- Did they configure sync and link at least one device by the end of the period?
+- Was Firefox set as the default browser at the end of the period?
+- Did they change their search default at some point during the period?
+    + Otherwise, the actual search default at the end of the period: Yahoo/Google/Other
+- Did they make any bookmarks during the period?
+- Average number of history pages per uptime hour
+- Did they make any SAP searches during the period?
+    + Otherwise, average search rate (searches per hour)
+- Did they change their theme at some point during the period?
+
 
 # Limitations and bias
 

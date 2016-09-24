@@ -212,7 +212,7 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">Effect of add-ons on engagement of Firefox users</h1>
-<h4 class="date"><em>Updated September 06, 2016</em></h4>
+<h4 class="date"><em>Updated September 23, 2016</em></h4>
 
 </div>
 
@@ -244,6 +244,12 @@ div[id^="todo"] {
 <li>specific geos</li>
 <li>profile was on newest available version at creation time (almost every profile should meet this requirement, but just in case)</li>
 </ul>
+<div id="for-v1-of-the-model" class="section level4">
+<h4>For v1 of the model:</h4>
+<ul>
+<li>Use locale <code>en-US</code> and geo <code>US</code></li>
+</ul>
+</div>
 <div id="todo" class="section level4">
 <h4>TODO</h4>
 <ul>
@@ -262,30 +268,31 @@ div[id^="todo"] {
 <ul>
 <li>were created between 2016-01-01 and 2016-03-01 (so that their entire history is available in the UT dataset, and they are least 6 months old)</li>
 <li>belong to the <a href="#population">population of interest</a></li>
-<li>installed an <a href="#addon-requirements">acceptable add-on</a> no earlier than 2 weeks(?) and no later than 3 months since profile creation</li>
-<li>did not install a second add-on within the first 6 months</li>
+<li>installed an <a href="#addon-requirements">acceptable add-ons</a> (the <em>first add-on</em>) no earlier than 2 weeks(?) and no later than 3 months since profile creation</li>
+<li>may have installed other acceptable add-ons at a later stage, and may have had non-acceptable add-ons installed at any stage (eg. system add-ons)</li>
 </ul>
 <p>The control group is selected from profiles that:</p>
 <ul>
-<li>were created on or after 2016-01-01</li>
+<li>were created between 2016-01-01 and 2016-03-01</li>
 <li>belong to the population of interest</li>
-<li>did not install any add-on for at least 6 months since profile creation</li>
+<li>did not install any acceptable add-on for at least 6 months since profile creation (although they may have had non-acceptable add-ons installed)</li>
 <li><a href="#matching">match</a> a profile in the test group along a set of profile characteristics</li>
 </ul>
+<p>The goal is to test the effect of (actively) using add-ons in general. Thus, our test group “uses add-ons” in the sense that each user actively installed at least one add-on during the study period, whereas the control group didn’t. We allow the presence of unacceptable add-ons (such as system add-ons) in either group, since excluding them completely would introduce bias. (Of course it’s possible that the presence of badly-behaving unacceptable add-ons would cause confounding, but let’s handle that at a later stage).</p>
 <div id="todo-1" class="section level4">
 <h4>TODO</h4>
 <ul>
 <li>fix time periods:
 <ul>
-<li>initial period (before first add-on installation)</li>
+<li>initial period (before first add-on installation) However, we want to exclude add-ons which are known to cause problems, so as not to have their presence confounding the results.</li>
 <li>treatment period (during which the first add-on can be installed)</li>
 <li>follow-up period (during which no further add-ons can be installed)</li>
 </ul></li>
-<li>should we allow profiles with system add-ons? are we biasing if we don’t? Otherwise, include presence of system add-ons in the model as a covariate.</li>
+<li>include presence of non-acceptable, non-system add-ons as a covariate</li>
 </ul>
 </div>
 <div id="addon-requirements" class="section level3">
-<h3>The first add-on</h3>
+<h3>Acceptable first add-ons</h3>
 <p>There are certain restrictions on the first add-on that a test group member installs in order to be included in the study:</p>
 <ul>
 <li>The add-on must be one that the user installed explicitly, ie. not a system add-on, not bundled with some other other software (eg. virus scanners), etc.</li>
@@ -295,6 +302,14 @@ div[id^="todo"] {
 <li>We could potentially include add-ons that don’t have a noticeable effect for comparison</li>
 </ul></li>
 </ul>
+<p>A good example of an acceptable add-on is AdBlock Plus.</p>
+<div id="for-v1-of-the-model-1" class="section level4">
+<h4>For v1 of the model:</h4>
+<ul>
+<li>AdBlock Plus</li>
+<li>…</li>
+</ul>
+</div>
 <div id="todo-2" class="section level4">
 <h4>TODO</h4>
 <ul>
@@ -343,13 +358,49 @@ div[id^="todo"] {
 </div>
 <div id="covariates" class="section level2">
 <h2>Covariates</h2>
-<p>The following measures will be included as covariates in the model, in order to control for their effect when analyzing the effect on the response of installing the add-on:</p>
-<div id="todo-6" class="section level4">
-<h4>TODO</h4>
+<p>The following measures will be included as covariates in the model, in order to control for their effect when analyzing the effect on the response of installing the add-on.</p>
+<p>The following system characteristics are intended to describe a user’s computing environment/resources, as well as give an indication of their technical knowledge.</p>
 <ul>
-<li>covariate measures</li>
+<li>OS</li>
+<li>OS version (Windows only)</li>
+<li>System architecture</li>
+<li>System memory (grouped by 2^n GB)</li>
+<li>Number of physical CPU cores</li>
+<li>(First) graphics adapter vendorID?</li>
 </ul>
-</div>
+<p>There are some other features we want to control for but aren’t explicitly interested in.</p>
+<ul>
+<li>Average number of main crashes per session hour</li>
+<li>Initial Firefox version</li>
+<li>Profile creation date (grouped by month)</li>
+<li>Did they have non-system, non-acceptable add-ons?
+<ul>
+<li>eg. did they have foreign-installed, enabled add-ons?</li>
+</ul></li>
+<li>Did they enable telemetry by the end of the period?</li>
+</ul>
+<p>The following statistics are aggregated over a period. Together, they characterize a user’s pattern of activity and engagement.</p>
+<ul>
+<li>Total number of active days in the period</li>
+<li>Longest run of consecutive active days in the period</li>
+<li>Was the profile active on weekends?</li>
+<li>Average number of sessions per active day</li>
+<li>Average uptime per active day (in minutes)</li>
+<li>Average usage intensity (percentage of uptime that was “active”)</li>
+<li>Did they configure sync and link at least one device by the end of the period?</li>
+<li>Was Firefox set as the default browser at the end of the period?</li>
+<li>Did they change their search default at some point during the period?
+<ul>
+<li>Otherwise, the actual search default at the end of the period: Yahoo/Google/Other</li>
+</ul></li>
+<li>Did they make any bookmarks during the period?</li>
+<li>Average number of history pages per uptime hour</li>
+<li>Did they make any SAP searches during the period?
+<ul>
+<li>Otherwise, average search rate (searches per hour)</li>
+</ul></li>
+<li>Did they change their theme at some point during the period?</li>
+</ul>
 </div>
 </div>
 <div id="limitations-and-bias" class="section level1">
@@ -362,7 +413,7 @@ div[id^="todo"] {
 </div>
 <div id="matching" class="section level1">
 <h1>Matching</h1>
-<div id="todo-7" class="section level4">
+<div id="todo-6" class="section level4">
 <h4>TODO</h4>
 <ul>
 <li>Describe the algorithm for matching profiles on the variables listed <a href="#matching">above</a></li>
